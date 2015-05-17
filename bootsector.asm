@@ -1,23 +1,35 @@
 [org 0x7c00]
-mov ah, 0x0e
-mov al, [char1]
-int 0x10
-mov ah, 0x0e
-mov al, [char2]
-int 0x10
-mov ah, 0x0e
-mov al, [char3]
-int 0x10
 
-jmp $ 					; Jump to the current line to create an endless loop
-						; in order to stop the programming to go to unknown places
+mov bp, 0xffff
+mov sp, bp
 
-char1:
-	db 'W'
-char2:
-	db 'W'
-char3:
-	db 'E'
+mov al, 19							; Load 19 more sectors behind 0x7c00
+mov bx, kernel_entry
+call read_from_disk
+
+call protected_mode
+
+jmp $ 								; Jump to the current line to create an endless loop
+									; in order to stop the programming to go to unknown places
+
+[bits 32]
+
+pm_enter:
+	mov esi, MSG_PM
+	call pm_print_str
+
+	jmp kernel_entry
+
+[bits 16]
+
+%include "asm/functions.asm"
+%include "asm/pmfunctions.asm"
+%include "asm/protectedmode.asm"
+
+MSG_PM:
+	db '32-bit protected mode', 0
 
 times 510-($-$$	) db 0
 dw 0xAA55
+
+kernel_entry:
