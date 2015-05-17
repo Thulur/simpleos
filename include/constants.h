@@ -1,0 +1,1 @@
+#define VIDEO_MEMORY_TEXT 0xb8000
